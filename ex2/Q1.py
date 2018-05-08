@@ -16,5 +16,29 @@ def minThrows(floors):
     return aux_mat[(floors, 2)]
 
 
+def findOnesSubMat(binMat):
+
+    matSize = binMat.shape
+    onesMat = np.zeros(matSize, dtype=np.uint)
+
+    onesMat[:, 0] = binMat[:, 0]
+    onesMat[0, :] = binMat[0, :]
+
+    for i in range(1, matSize[0]):
+        for j in range(1, matSize[1]) :
+            minNeighbVal = min(onesMat[i - 1, j], onesMat[i, j - 1], onesMat[i - 1, j - 1])
+            onesMat[i, j] = binMat[i, j] * (1 + minNeighbVal)
+    print('final Mat')
+    print(onesMat)
+    return onesMat.max()
+
+
 if __name__ == '__main__':
-    print(minThrows(4))
+    # print(minThrows(4))
+    N = 7
+    p = 0.9
+    binMat = np.random.choice(a=[1, 0], size=(N, N), p=[p, 1 - p])
+    print('original Mat')
+    print(binMat)
+    print(findOnesSubMat(binMat))
+
