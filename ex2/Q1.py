@@ -35,7 +35,7 @@ def findOnesSubMat(binMat):
 
 if __name__ == '__main__':
     # print(minThrows(4))
-    N = 7
+    N = 10
     p = 0.9
     binMat = np.random.choice(a=[1, 0], size=(N, N), p=[p, 1 - p])
     print('original Mat')
