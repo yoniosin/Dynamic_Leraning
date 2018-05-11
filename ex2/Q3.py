@@ -29,13 +29,11 @@ def calcRewardWrapper(path_list, init_prob):
     return sum(totReward) / len(path_list), max(totReward)
 
 
-def bestPath(steps, initProb):
-    V = np.zeros(stateNum)
+def bestPath(steps, prob):
+    V = [0.7, 1, 0.5]
     policy = []
-    for i in range(steps):
-        V[i] += max(np.dot(R[1], initProb), np.dot(R[2], initProb))
-
-     V[i] = max(np.dot(R[1], initProb), np.dot(R[2], initProb))
+    for _ in range(steps - 1):
+        V += max(np.dot(V, P[1]), np.dot(V, P[2]))
 
 
 if __name__ == '__main__':
