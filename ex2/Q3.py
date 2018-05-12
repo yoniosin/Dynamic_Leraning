@@ -37,17 +37,16 @@ def maxVal(a, b):
 
 
 def bestPath(steps):
-    V = np.empty((3, 3))
     policy = np.empty((3, 3), dtype=int)
-    vReward = np.array([[R1], [R2]])
-    V[0, :] = vReward.max(0)
+    vReward = np.array([R1, R2])
+    V = vReward.max(0).transpose()
     policy[0, :] = (vReward.argmax(0) + 1)
     for j in range(1, steps):
-        vReward = np.array([R1 + np.dot(P1, V[j-1, :]), R2 + np.dot(P2, V[j-1, :])])
-        V[j, :] = vReward.max(0)
+        vReward = np.array([R1 + np.dot(P1, V), R2 + np.dot(P2, V)])
+        V = vReward.max(0)
         policy[j, :] = vReward.argmax(0) + 1
 
-    return policy, V[2, :]
+    return policy, V
 
 
 if __name__ == '__main__':
