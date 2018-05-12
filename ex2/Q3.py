@@ -26,7 +26,7 @@ def calcRewardWrapper(path_list, init_prob):
     for path in path_list:
         totReward.append(calcReward(path, init_prob))
 
-    return sum(totReward) / len(path_list), max(totReward)
+    return sum(totReward) / len(path_list)
 
 
 def maxVal(a, b):
@@ -58,9 +58,15 @@ if __name__ == '__main__':
     init_prob = np.array([1, 0, 0])
     a_list = np.array([1, 1, 1])
 
-    print('a. first reward: ' + str(calcReward(a_list, init_prob)))
+    print('a. first reward: ' + "%.2f" % calcReward(a_list, init_prob))
 
     path_list = list(it.product([1, 2], repeat=stateNum))
-    print('b. second reward: ' + str(calcRewardWrapper(path_list, init_prob)))
+    print('b. second reward: ' + "%.2f" % calcRewardWrapper(path_list, init_prob))
+
+    [policy, V] = bestPath(3)
+    print('policy for each step is ' + '\n' + str(policy))
+    print('Average reward after 3 steps starting from each state is ' + np.array_str(V, precision=2))
+
+
 
     print(bestPath(3))
