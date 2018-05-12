@@ -37,26 +37,22 @@ def maxVal(a, b):
 
 
 def bestPath(steps):
-    V = np.empty((3,3))
-    policy = {0: [], 1: [], 2: []}
-    for i in range(3):
-        reward, action = maxVal(R1[i], R2[i])
-        V[0, i] = reward
-        policy[i].append(action)
+    V = np.empty((3, 3))
+    policy = np.empty((3, 3), dtype=int)
+    vReward = np.array([[R1], [R2]])
+    V[0, :] = vReward.max(0)
+    policy[0, :] = (vReward.argmax(0) + 1)
     for j in range(1, steps):
-        a1_addition = np.dot(P1, V[j-1, :])
-        a2_addition = np.dot(P2, V[j-1, :])
-        for i in range(3):
-            reward, action = maxVal(R1[i] + a1_addition[i], R2[i] + a2_addition[i])
-            V[j, i] = reward
-            policy[i].append(action)
+        vReward = np.array([R1 + np.dot(P1, V[j-1, :]), R2 + np.dot(P2, V[j-1, :])])
+        V[j, :] = vReward.max(0)
+        policy[j, :] = vReward.argmax(0) + 1
 
-    return policy[0], V[2, 0]
+    return policy, V[2, :]
 
 
 if __name__ == '__main__':
     init_prob = np.array([1, 0, 0])
-    a_list = np.array([1, 1, 1])
+    a_list = np.array([2, 1, 2])
 
     print('a. first reward: ' + "%.2f" % calcReward(a_list, init_prob))
 
@@ -66,7 +62,3 @@ if __name__ == '__main__':
     [policy, V] = bestPath(3)
     print('policy for each step is ' + '\n' + str(policy))
     print('Average reward after 3 steps starting from each state is ' + np.array_str(V, precision=2))
-
-
-
-    print(bestPath(3))
