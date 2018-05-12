@@ -12,41 +12,32 @@ R = {1: R1, 2: R2}
 stateNum = 3
 
 
-def calcReward(a_list, prob):
+def calcReward(action_list, prob):
     Reward = 0
-    for a in a_list:
+    for a in action_list:
         Reward += np.dot(prob, R[a])
         prob = np.dot(prob, P[a])
 
     return Reward
 
 
-def calcRewardWrapper(path_list, init_prob):
+def calcRewardWrapper(paths_list, prob):
     totReward = []
-    for path in path_list:
-        totReward.append(calcReward(path, init_prob))
+    for path in paths_list:
+        totReward.append(calcReward(path, prob))
 
     return sum(totReward) / len(path_list)
 
 
-def maxVal(a, b):
-    if a > b:
-        return a, 1
-    else:
-        return b, 2
-
-
 def bestPath(steps):
     policy = np.empty((3, 3), dtype=int)
-    vReward = np.array([R1, R2])
-    V = vReward.max(0).transpose()
-    policy[0, :] = (vReward.argmax(0) + 1)
-    for j in range(1, steps):
-        vReward = np.array([R1 + np.dot(P1, V), R2 + np.dot(P2, V)])
-        V = vReward.max(0)
+    v = np.zeros(stateNum)
+    for j in range(steps):
+        vReward = np.array([R1 + np.dot(P1, v), R2 + np.dot(P2, v)])
+        v = vReward.max(0)
         policy[j, :] = vReward.argmax(0) + 1
 
-    return policy, V
+    return policy, v
 
 
 if __name__ == '__main__':
@@ -58,6 +49,6 @@ if __name__ == '__main__':
     path_list = list(it.product([1, 2], repeat=stateNum))
     print('b. second reward: ' + "%.2f" % calcRewardWrapper(path_list, init_prob))
 
-    [policy, V] = bestPath(3)
-    print('policy for each step is ' + '\n' + str(policy))
-    print('Average reward after 3 steps starting from each state is ' + np.array_str(V, precision=2))
+    optimal_policy, V = bestPath(stateNum)
+    print('Optimal policy for each step is ' + '\n' + str(optimal_policy))
+    # print('Average reward after 3 steps starting from each state is ' + np.array_str(V, precision=2))
