@@ -37,7 +37,7 @@ def bestPath(steps):
         v = vReward.max(0)
         policy[j, :] = vReward.argmax(0) + 1
 
-    return policy, v
+    return policy
 
 
 if __name__ == '__main__':
@@ -49,6 +49,4 @@ if __name__ == '__main__':
     path_list = list(it.product([1, 2], repeat=stateNum))
     print('b. second reward: ' + "%.2f" % calcRewardWrapper(path_list, init_prob))
 
-    optimal_policy, V = bestPath(stateNum)
-    print('Optimal policy for each step is ' + '\n' + str(optimal_policy))
-    # print('Average reward after 3 steps starting from each state is ' + np.array_str(V, precision=2))
+    print('Optimal policy for each step is ' + '\n' + str(bestPath(stateNum)))
