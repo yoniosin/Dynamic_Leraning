@@ -44,9 +44,9 @@ if __name__ == '__main__':
     init_prob = np.array([1, 0, 0])
     a_list = np.array([2, 1, 2])
 
-    print('a. first reward: ' + "%.2f" % calcReward(a_list, init_prob))
+    print('a. reward is: ' + "%.2f" % calcReward(a_list, init_prob))
 
     path_list = list(it.product([1, 2], repeat=stateNum))
-    print('b. second reward: ' + "%.2f" % calcRewardWrapper(path_list, init_prob))
+    print('b. Avarage reward is: ' + "%.2f" % calcRewardWrapper(path_list, init_prob))
 
     print('Optimal policy for each step is ' + '\n' + str(bestPath(stateNum)))
