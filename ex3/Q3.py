@@ -22,8 +22,9 @@ def calcTerminalYProb(x, y):
     rewardVec = np.zeros(10)
     for i in range(10):
         rewardVec[i] = calcTerminalYProb(x, y + (i + 2))
-    return np.mean(rewardVec)
+    helper_dict[(x, y)] = np.mean(rewardVec)
+    return helper_dict[(x, y)]
 
 
 if __name__ == '__main__':
-    print(calcTerminalYProb(20, 15))
+    print(calcTerminalYProb(2, 14))
