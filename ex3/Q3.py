@@ -1,3 +1,4 @@
+from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -40,8 +41,8 @@ def ValIterationMDP(x, y, v_dict, p_dict):
         return calcTerminalYProb(x, y)
 
     hits_vec = np.zeros(10)
-    for i in range(10):
-        hits_vec[i] = ValIterationMDP(x + i + 2, y, v_dict, p_dict)
+    for i in range(2, 12):
+        hits_vec[i-2] = ValIterationMDP(x + i, y, v_dict, p_dict)
 
     hits = np.sum(hits_vec * prob_vec)
     sticks = calcTerminalYProb(x, y)
