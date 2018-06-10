@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 
 
 mu = np.asarray([0.6, 0.5, 0.3, 0.7, 0.1])
+# mu = np.asarray([0.6, 0.5, 0.3])
 cost = np.asarray([1, 4, 6, 2, 9])
+# cost = np.asarray([1, 4, 6])
 policy_len = 2 ** len(cost)
 mc = mu * cost
 
@@ -76,8 +78,9 @@ def calcValueFunction(policy, gamma):
         P[curr_state, next_state] += mu[selected_job]
         option_cost = cost[states_dict[curr_state].jobs]
         l[curr_state] += sum(option_cost)
-
-    V = np.dot(np.linalg.inv(np.eye(pi_len) - gamma * P), l)
+    tmp = np.linalg.inv(np.eye(pi_len) - gamma * P)
+    V = np.dot(tmp, l)
+    V[0] = 0
     return V, P
 
 
@@ -88,25 +91,28 @@ def policyIteration(policy, gamma):
     first_state_value = []
 
     while conToNextIter:
-        prevV, _ = calcValueFunction(nextPolicy.astype(int), gamma)
-        nextV = np.zeros(len(nextV))
+        prevV = nextV
+        evaluateV = np.zeros(len(prevV))
         nextPolicy = np.zeros(len(policy))
         for state_idx in range(len(policy)):
             state = states_dict[state_idx]
             possible_states = state.next_states
             possible_jobs = state.jobs
             if len(possible_states) == 0:
-                nextV[state_idx] = 0
+                evaluateV[state_idx] = 0
                 nextPolicy[state_idx] = 1
             else:
-                new_p = P[possible_states, :]
-                new_v = prevV
-                v_for_curr_state = state.loss + gamma * np.dot(new_p, new_v)
-                nextV[state_idx] = np.min(v_for_curr_state)
+                # new_p = P[possible_states, :]
+                # new_v = prevV
+                # v_for_curr_state = state.loss + gamma * np.dot(new_p, new_v)
+                tmp = (1 - mu[possible_jobs]) * prevV[state_idx] + mu[possible_jobs] * prevV[possible_states]
+                v_for_curr_state = state.loss + gamma * tmp
+                evaluateV[state_idx] = np.min(v_for_curr_state)
 
                 nextPolicy[state_idx] = possible_jobs[np.argmin(v_for_curr_state)] + 1
 
-        first_state_value.append(nextV[31])
+        first_state_value.append(evaluateV[-1])
+        nextV, _ = calcValueFunction(nextPolicy.astype(int), gamma)
         conToNextIter = np.any(np.logical_not(np.equal(prevV, nextV)))
 
     return nextPolicy, first_state_value
@@ -130,9 +136,9 @@ if __name__ == '__main__':
     mc_max_policy = buildCMaxPolicy('mc')
 
     plt.figure()
-    plt.stem(range(1, 32), opt_policy[1:])
+    plt.stem(range(1, policy_len), opt_policy[1:])
     plt.hold(True)
-    points, lines, _ = plt.stem(range(1, 32), mc_max_policy[1:])
+    points, lines, _ = plt.stem(range(1, policy_len), mc_max_policy[1:])
     plt.setp(lines, color='r')
     plt.setp(points, color='r')
     plt.show()
