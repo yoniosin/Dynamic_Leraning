@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import random
 
+
 class State:
     def __init__(self, idx):
         self.idx = idx
@@ -9,8 +10,16 @@ class State:
         self.jobs = []
         self.const_loss = 0
 
-    def calcLoss(self):
-        self.const_loss = sum(cost[self.jobs])
+    def CalcPosJobs(self, job_num):
+        for job in range(job_num):
+            if self.isJobWaiting(job):
+                next_state = self.calcNextState(job)
+                self.next_states.append(next_state)
+                self.jobs.append(job)
+
+    def calcLoss(self, job_num, cost_vec):
+        self.CalcPosJobs(job_num)
+        self.const_loss = sum(cost_vec[self.jobs])
 
     def calcValFunc(self, value_func, gamma):
         success_vec = mu[self.jobs] * value_func[self.next_states]
@@ -21,60 +30,52 @@ class State:
         if (self.idx & (1 << job)) >> job == 1:
             return True
         return False
-    
+
     def calcNextState(self, job):
         if self.idx == 0:
             return 0
         return self.idx - 2 ** job
-    
-    def Simulate(self, action):
-    if action not in self.jobs:
-        raise ValueError
 
-    thres = self.mu[action]
-    if random(1) < thres:  # job completed w.p mu
-        next_state = self.calcNextState(action)
-    else:
-        next_state = self.idx
+    def Simulate(self, action, mu_vec):
+        if action not in self.jobs:
+            raise ValueError
 
-    return state.const_loss, next_state
+        thres = mu_vec[action]
+        if random(1) < thres:  # job completed w.p mu
+            next_state = self.calcNextState(action)
+        else:
+            next_state = self.idx
 
+        return self.const_loss, next_state
 
 
 class Queue:
-    def __init(self, cost, mu):
+    def __init__(self, cost_vec, mu_vec):
         self.states_dict = {}
-        self.cost = cost
-        self.mu = mu
+        self.cost = cost_vec
+        self.mu = mu_vec
         self.mc = self.mu * self.cost
-        self.job_num = len(cost)
+        self.job_num = len(cost_vec)
         self.policy_len = 2 ** self.job_num
-        
+
         for state_idx in range(self.policy_len):
             self.states_dict[state_idx] = State(state_idx)
             state = self.states_dict[state_idx]
-            for job in range(job_num):
-                if isJobWaiting(state_idx, job):
-                    next_state = calcNextState(state_idx, job)
-                    state.next_states.append(next_state)
-                    state.jobs.append(job)
+            state.calcLoss(self.job_num, self.cost)
 
-           state.calcLoss()
-        
     def buildCMaxPolicy(self, calc_type):
-    policy = np.ones(self.policy_len)
-    if calc_type == 'mc':
-        cost_vec = self.mc
-    else:
-        cost_vec = self.cost
-    for state in range(1, self.policy_len):
-        curr_state = self.states_dict[state]
-        option_cost = cost_vec[curr_state.jobs]
-        chosen_s = curr_state.jobs[np.argmax(option_cost)]
-        policy[state] = chosen_s + 1
+        policy = np.ones(self.policy_len)
+        if calc_type == 'mc':
+            cost_vec = self.mc
+        else:
+            cost_vec = self.cost
+        for state_idx in range(1, self.policy_len):
+            curr_state = self.states_dict[state_idx]
+            option_cost = cost_vec[curr_state.jobs]
+            chosen_s = curr_state.jobs[np.argmax(option_cost)]
+            policy[state_idx] = chosen_s + 1
 
-    return policy.astype(int)
-
+        return policy.astype(int)
 
     def calcValueFunction(self, policy, gamma):
         policy = policy - 1
@@ -85,7 +86,7 @@ class Queue:
         for curr_state_idx, selected_job in enumerate(policy):
             curr_state = self.states_dict[curr_state_idx]
             P[curr_state_idx, curr_state_idx] = 1 - mu[selected_job]
-            next_state = curr_state.calcNextState(selected_job)
+            next_state = queue.states_dict[curr_state.calcNextState(selected_job)]
             P[curr_state_idx, next_state.idx] += mu[selected_job]
             option_cost = cost[curr_state.jobs]
             l[curr_state_idx] += sum(option_cost)
@@ -93,7 +94,6 @@ class Queue:
         V = np.dot(tmp, l)
         V[0] = 0
         return V, P
-
 
     def policyIteration(self, policy, gamma):
         nextV, P = self.calcValueFunction(policy, gamma)
@@ -119,13 +119,13 @@ class Queue:
                     nextPolicy[state_idx] = possible_jobs[np.argmin(v_for_curr_state)] + 1
 
             first_state_value.append(evaluateV[-1])
-            nextV, _ = calcValueFunction(nextPolicy.astype(int), gamma)
+            nextV, _ = self.calcValueFunction(nextPolicy.astype(int), gamma)
             conToNextIter = np.any(np.logical_not(np.equal(prevV, nextV)))
 
         return nextPolicy, first_state_value
-    
+
     def Simulate(self, state_idx, action):
-        return self.states_dict[state_idx].Simulate(action)
+        return self.states_dict[state_idx].Simulate(action, self.mu)
 
 
 if __name__ == '__main__':
@@ -149,9 +149,9 @@ if __name__ == '__main__':
     mc_max_policy = queue.buildCMaxPolicy('mc')
 
     plt.figure()
-    plt.stem(range(1, policy_len), opt_policy[1:], '-b', label='V')
+    plt.stem(range(1, queue.policy_len), opt_policy[1:], '-b', label='V')
     plt.hold(True)
-    plt.stem(range(1, policy_len), mc_max_policy[1:], '-g', label='mc')
+    plt.stem(range(1, queue.policy_len), mc_max_policy[1:], '-g', label='mc')
     plt.legend(loc='upper left')
     plt.show()
 

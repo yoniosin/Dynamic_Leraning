@@ -1,2 +1,11 @@
-from ex4.Planning import Simulate
+import ex4.Planning as Q
+import numpy as np
+
+
+if __name__ == '__main__':
+    mu = np.asarray([0.6, 0.5, 0.3, 0.7, 0.1])
+    cost = np.asarray([1, 4, 6, 2, 9])
+
+    queue = Q.Queue(cost, mu)
+    print('All Done :)')
 
