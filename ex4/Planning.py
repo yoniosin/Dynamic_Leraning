@@ -41,7 +41,7 @@ class State:
             raise ValueError
 
         thres = mu_vec[action]
-        if random(1) < thres:  # job completed w.p mu
+        if random() < thres:  # job completed w.p mu
             next_state = self.calcNextState(action)
         else:
             next_state = self.idx
