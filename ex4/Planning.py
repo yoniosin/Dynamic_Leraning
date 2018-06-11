@@ -123,6 +123,9 @@ class Queue:
             conToNextIter = np.any(np.logical_not(np.equal(prevV, nextV)))
 
         return nextPolicy, first_state_value
+    
+    def Simulate(self, state_idx, action):
+        return self.states_dict[state_idx].Simulate(action)
 
 
 if __name__ == '__main__':
