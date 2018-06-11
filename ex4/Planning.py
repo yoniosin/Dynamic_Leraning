@@ -2,7 +2,7 @@ from typing import Any, Union
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from random import random
 
 mu = np.asarray([0.6, 0.5, 0.3, 0.7, 0.1])
 # mu = np.asarray([0.6, 0.5, 0.3])
@@ -13,16 +13,34 @@ mc = mu * cost
 
 
 class State:
-
-    def __init__(self):
+    def __init__(self, idx):
+        self.idx = idx
         self.next_states = []
         self.jobs = []
+        self.const_loss = 0
 
     def calcLoss(self):
-        self.loss = sum(cost[self.jobs])
+        self.const_loss = sum(cost[self.jobs])
+
+    def calcValFunc(self, value_func, gamma):
+        val_on_success = mu[self.jobs] * value_func[self.next_states]
+        val_on_fail = (1 - mu[self.jobs]) * value_func[self.idx]
+        return self.const_loss + gamma * (val_on_success + val_on_fail)
+
+    def Simulate(self, action):
+        if action not in self.jobs:
+            raise ValueError
+
+        thres = mu[action]
+        if random(1) < thres:  # job completed w.p mu
+            next_state = calcNextState(self.idx, action)
+        else:
+            next_state = self.idx
+
+        return self.const_loss, next_state
 
 
-states_dict = {i: State() for i in range(policy_len)}
+states_dict = {i: State(i) for i in range(policy_len)}
 
 
 def init(job_num):
@@ -102,11 +120,7 @@ def policyIteration(policy, gamma):
                 evaluateV[state_idx] = 0
                 nextPolicy[state_idx] = 1
             else:
-                # new_p = P[possible_states, :]
-                # new_v = prevV
-                # v_for_curr_state = state.loss + gamma * np.dot(new_p, new_v)
-                tmp = (1 - mu[possible_jobs]) * prevV[state_idx] + mu[possible_jobs] * prevV[possible_states]
-                v_for_curr_state = state.loss + gamma * tmp
+                v_for_curr_state = state.calcValFunc(prevV, gamma)
                 evaluateV[state_idx] = np.min(v_for_curr_state)
 
                 nextPolicy[state_idx] = possible_jobs[np.argmin(v_for_curr_state)] + 1
@@ -136,11 +150,10 @@ if __name__ == '__main__':
     mc_max_policy = buildCMaxPolicy('mc')
 
     plt.figure()
-    plt.stem(range(1, policy_len), opt_policy[1:])
+    plt.stem(range(1, policy_len), opt_policy[1:], '-b', label='V')
     plt.hold(True)
-    points, lines, _ = plt.stem(range(1, policy_len), mc_max_policy[1:])
-    plt.setp(lines, color='r')
-    plt.setp(points, color='r')
+    plt.stem(range(1, policy_len), mc_max_policy[1:], '-g', label='mc')
+    plt.legend(loc='upper left')
     plt.show()
 
     print('all done')
