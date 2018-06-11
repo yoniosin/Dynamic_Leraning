@@ -1,5 +1,3 @@
-from typing import Any, Union
-
 import numpy as np
 import matplotlib.pyplot as plt
 from random import random
@@ -132,20 +130,20 @@ if __name__ == '__main__':
     cost = np.asarray([1, 4, 6, 2, 9])
 
     queue = Queue(cost, mu)
-    c_max_policy = buildCMaxPolicy('cost')
-    V_c_max = calcValueFunction(c_max_policy, 0.9)
+    c_max_policy = queue.buildCMaxPolicy('cost')
+    V_c_max = queue.calcValueFunction(c_max_policy, 0.9)
 
     plt.figure()
     plt.stem(range(1, 32), c_max_policy[1:])
     plt.xlabel('state'), plt.ylabel('action')
     plt.show()
 
-    opt_policy, first_state = policyIteration(c_max_policy, 0.9)
+    opt_policy, first_state = queue.policyIteration(c_max_policy, 0.9)
     plt.figure()
     plt.stem(range(1, len(first_state) + 1), first_state)
     plt.show()
 
-    mc_max_policy = buildCMaxPolicy('mc')
+    mc_max_policy = queue.buildCMaxPolicy('mc')
 
     plt.figure()
     plt.stem(range(1, policy_len), opt_policy[1:], '-b', label='V')
