@@ -27,17 +27,19 @@ class State:
         val_on_fail = (1 - mu[self.jobs]) * value_func[self.idx]
         return self.const_loss + gamma * (val_on_success + val_on_fail)
 
-    def Simulate(self, action):
-        if action not in self.jobs:
-            raise ValueError
 
-        thres = mu[action]
-        if random(1) < thres:  # job completed w.p mu
-            next_state = calcNextState(self.idx, action)
-        else:
-            next_state = self.idx
+def Simulate(state_idx, action):
+    state = states_dict[state_idx]
+    if action not in state.jobs:
+        raise ValueError
 
-        return self.const_loss, next_state
+    thres = mu[action]
+    if random(1) < thres:  # job completed w.p mu
+        next_state = calcNextState(state.idx, action)
+    else:
+        next_state = state.idx
+
+    return state.const_loss, next_state
 
 
 states_dict = {i: State(i) for i in range(policy_len)}
