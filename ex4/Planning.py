@@ -23,9 +23,12 @@ class State:
         self.const_loss = sum(cost[self.jobs])
 
     def calcValFunc(self, value_func, gamma):
-        val_on_success = mu[self.jobs] * value_func[self.next_states]
-        val_on_fail = (1 - mu[self.jobs]) * value_func[self.idx]
-        return self.const_loss + gamma * (val_on_success + val_on_fail)
+        success_vec = mu[self.jobs] * value_func[self.next_states]
+        fail_vec = (1 - mu[self.jobs]) * value_func[self.idx]
+        return self.const_loss + gamma * (success_vec + fail_vec)
+
+    
+states_dict = {i: State(i) for i in range(policy_len)}
 
 
 def Simulate(state_idx, action):
@@ -40,9 +43,6 @@ def Simulate(state_idx, action):
         next_state = state.idx
 
     return state.const_loss, next_state
-
-
-states_dict = {i: State(i) for i in range(policy_len)}
 
 
 def init(job_num):
