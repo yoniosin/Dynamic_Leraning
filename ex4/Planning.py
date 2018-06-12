@@ -10,6 +10,12 @@ class State:
         self.jobs = []
         self.const_loss = 0
 
+    def isJobWaiting(self, job):
+        return True if (self.idx & (1 << job)) >> job == 1 else False
+
+    def calcNextState(self, job):
+        return 0 if self.idx == 0 else self.idx - 2 ** job
+
     def CalcPosJobs(self, job_num):
         for job in range(job_num):
             if self.isJobWaiting(job):
@@ -26,25 +32,12 @@ class State:
         fail_vec = (1 - mu[self.jobs]) * value_func[self.idx]
         return self.const_loss + gamma * (success_vec + fail_vec)
 
-    def isJobWaiting(self, job):
-        if (self.idx & (1 << job)) >> job == 1:
-            return True
-        return False
-
-    def calcNextState(self, job):
-        if self.idx == 0:
-            return 0
-        return self.idx - 2 ** job
-
     def Simulate(self, action, mu_vec):
         if action not in self.jobs:
             raise ValueError
 
         thres = mu_vec[action]
-        if random() < thres:  # job completed w.p mu
-            next_state = self.calcNextState(action)
-        else:
-            next_state = self.idx
+        next_state = self.calcNextState(action) if random() < thres else self.idx  # job completed w.p mu
 
         return self.const_loss, next_state
 
@@ -63,12 +56,13 @@ class Queue:
             state = self.states_dict[state_idx]
             state.calcLoss(self.job_num, self.cost)
 
+    def getState(self, state_idx):
+        return self.states_dict[state_idx]
+
     def buildCMaxPolicy(self, calc_type):
         policy = np.ones(self.policy_len)
-        if calc_type == 'mc':
-            cost_vec = self.mc
-        else:
-            cost_vec = self.cost
+        cost_vec = self.mc if calc_type == 'mc' else self.cost
+
         for state_idx in range(1, self.policy_len):
             curr_state = self.states_dict[state_idx]
             option_cost = cost_vec[curr_state.jobs]
@@ -85,10 +79,10 @@ class Queue:
 
         for curr_state_idx, selected_job in enumerate(policy):
             curr_state = self.states_dict[curr_state_idx]
-            P[curr_state_idx, curr_state_idx] = 1 - mu[selected_job]
-            next_state = queue.states_dict[curr_state.calcNextState(selected_job)]
-            P[curr_state_idx, next_state.idx] += mu[selected_job]
-            option_cost = cost[curr_state.jobs]
+            P[curr_state_idx, curr_state_idx] = 1 - self.mu[selected_job]
+            next_state = self.states_dict[curr_state.calcNextState(selected_job)]
+            P[curr_state_idx, next_state.idx] += self.mu[selected_job]
+            option_cost = self.cost[curr_state.jobs]
             l[curr_state_idx] += sum(option_cost)
         tmp = np.linalg.inv(np.eye(pi_len) - gamma * P)
         V = np.dot(tmp, l)
@@ -152,7 +146,7 @@ if __name__ == '__main__':
     plt.stem(range(1, queue.policy_len), opt_policy[1:], '-b', label='V')
     plt.hold(True)
     plt.stem(range(1, queue.policy_len), mc_max_policy[1:], '-g', label='mc')
-    plt.legend(loc='upper left')
+    plt.legend(loc='upper right')
     plt.show()
 
     print('all done')
