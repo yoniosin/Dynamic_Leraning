@@ -72,7 +72,7 @@ class Queue:
         return policy.astype(int)
 
     def calcValueFunction(self, policy, gamma):
-        policy = policy - 1
+        policy = np.asarray(policy, int) - 1
         pi_len = len(policy)
         P = np.zeros((pi_len, pi_len))
         l = np.zeros(pi_len)
@@ -95,7 +95,8 @@ class Queue:
         nextPolicy = policy
         first_state_value = []
 
-        while conToNextIter:
+        for _ in range(10):
+        # while conToNextIter:
             prevV = nextV
             evaluateV = np.zeros(len(prevV))
             nextPolicy = np.zeros(len(policy))
@@ -128,25 +129,42 @@ if __name__ == '__main__':
 
     queue = Queue(cost, mu)
     c_max_policy = queue.buildCMaxPolicy('cost')
-    V_c_max = queue.calcValueFunction(c_max_policy, 0.9)
+    V_c_max, _ = queue.calcValueFunction(c_max_policy, 0.9)
 
     plt.figure()
     plt.stem(range(1, 32), c_max_policy[1:])
     plt.xlabel('state'), plt.ylabel('action')
+    plt.title('policy of max cost of the remaining jobs')
     plt.show()
 
     opt_policy, first_state = queue.policyIteration(c_max_policy, 0.9)
+    V_opt_policy, _ = queue.calcValueFunction(opt_policy, 0.9)
     plt.figure()
     plt.stem(range(1, len(first_state) + 1), first_state)
+    plt.xlabel('iteration'), plt.ylabel('value function for first state')
+    plt.title('evaluation of the value function for first state')
     plt.show()
 
     mc_max_policy = queue.buildCMaxPolicy('mc')
+    V_mc_max = queue.calcValueFunction(mc_max_policy, 0.9)
 
     plt.figure()
-    plt.stem(range(1, queue.policy_len), opt_policy[1:], '-b', label='V')
+    plt.stem(range(1, queue.policy_len), opt_policy[1:], '-b', label='V opt')
     plt.hold(True)
-    plt.stem(range(1, queue.policy_len), mc_max_policy[1:], '-g', label='mc')
+    plt.stem(range(1, queue.policy_len), mc_max_policy[1:], '-g', label='V mc')
     plt.legend(loc='upper right')
+    plt.xlabel('state'), plt.ylabel('action')
+    plt.title('theoretic and calculated optimal policy')
     plt.show()
+
+    plt.figure()
+    plt.stem(range(1, queue.policy_len), V_opt_policy[1:], '-b', label='V opt')
+    plt.hold(True)
+    plt.stem(range(1, queue.policy_len), V_c_max[1:], '-g', label='V mc')
+    plt.legend(loc='upper right')
+    plt.xlabel('state'), plt.ylabel('value function')
+    plt.title('Value function of theoretic and calculated optimal policy')
+    plt.show()
+
 
     print('all done')
