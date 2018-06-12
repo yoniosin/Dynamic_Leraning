@@ -51,8 +51,8 @@ def TDLambda(queue_model, alpha_type, iteration_num, lamda):
     return np.asarray(inf_norm), np.asarray(s0_abs)
 
 
-def chooseAction(epsilone, curr_state_idx, queue, Q):
-    possible_jobs = queue.states_dict[curr_state_idx].jobs
+def chooseAction(epsilone, curr_state_idx, queue_model, Q):
+    possible_jobs = queue_model.states_dict[curr_state_idx].jobs
     best_action = possible_jobs[np.argmin(Q[curr_state_idx, possible_jobs])]
     rand_action = randomChoice(possible_jobs)
     chosen_action = best_action if random() < epsilone else rand_action
@@ -92,13 +92,12 @@ def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
 
         curr_state_idx = next_state_idx
 
-        if True:  # curr_iter % 50 == 0:
-            V, _ = queue_model.calcValueFunction(q_policy, gamma)
+        V, _ = queue_model.calcValueFunction(q_policy, gamma)
 
-            diff_vec = abs(V - V_mc)
-            inf_norm.append(max(diff_vec[valid_states]))
+        diff_vec = abs(V - V_mc)
+        inf_norm.append(max(diff_vec[valid_states]))
 
-            s0_abs.append(abs(V_mc[31] - np.min(Q[31, :])))
+        s0_abs.append(abs(V_mc[31] - np.min(Q[31, :])))
 
     return np.asarray(inf_norm), np.asarray(s0_abs)
 
