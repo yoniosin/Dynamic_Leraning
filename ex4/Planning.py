@@ -11,7 +11,7 @@ class State:
         self.const_loss = 0
 
     def isJobWaiting(self, job):
-        return True if (self.idx & (1 << job)) >> job == 1 else False
+        return (self.idx & (1 << job)) >> job == 1
 
     def calcNextState(self, job):
         return 0 if self.idx == 0 else self.idx - 2 ** job
@@ -56,9 +56,6 @@ class Queue:
             state = self.states_dict[state_idx]
             state.calcLoss(self.job_num, self.cost)
 
-    def getState(self, state_idx):
-        return self.states_dict[state_idx]
-
     def buildCMaxPolicy(self, calc_type):
         policy = np.ones(self.policy_len)
         cost_vec = self.mc if calc_type == 'mc' else self.cost
@@ -91,12 +88,10 @@ class Queue:
 
     def policyIteration(self, policy, gamma):
         nextV, P = self.calcValueFunction(policy, gamma)
-        conToNextIter = True
         nextPolicy = policy
         first_state_value = []
 
         for _ in range(10):
-        # while conToNextIter:
             prevV = nextV
             evaluateV = np.zeros(len(prevV))
             nextPolicy = np.zeros(len(policy))
@@ -115,7 +110,6 @@ class Queue:
 
             first_state_value.append(evaluateV[-1])
             nextV, _ = self.calcValueFunction(nextPolicy.astype(int), gamma)
-            conToNextIter = np.any(np.logical_not(np.equal(prevV, nextV)))
 
         return nextPolicy, first_state_value
 
@@ -165,6 +159,5 @@ if __name__ == '__main__':
     plt.xlabel('state'), plt.ylabel('value function')
     plt.title('Value function of theoretic and calculated optimal policy')
     plt.show()
-
 
     print('all done')

@@ -102,8 +102,8 @@ def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
     return np.asarray(inf_norm), np.asarray(s0_abs)
 
 
-def sectionG(queue_model, lamda):
-    for i, title in enumerate(['An = 1/ count', 'An = 0.01', 'An = 10/ count']):
+def sectionG(queue_model, lamda, title_vec):
+    for i, title in enumerate(title_vec):
         inf_norm, s0 = TDLambda(queue_model, i, 10000, lamda)
 
         plt.figure()
@@ -111,11 +111,12 @@ def sectionG(queue_model, lamda):
         plt.hold(True)
         plt.plot(range(1, len(inf_norm) + 1), s0, '-g', label='S0')
         plt.legend(loc='upper right')
-        plt.title('TD(' + str(lamda) + ') ' + title)
+        plt.title(r"TD(" + str(lamda) + r"), " + title)
+        plt.xlabel('Iteration Number'), plt.ylabel('Norm Value')
         plt.show()
 
 
-def sectionH(queue_model, alpha, lambda_vec, rep_num, alg_iter_num):
+def sectionH(queue_model, alpha, lambda_vec, rep_num, alg_iter_num, title):
     inf_norm = np.zeros(alg_iter_num)
     s0_norm = np.zeros(alg_iter_num)
     rep_div = 1 / rep_num
@@ -131,30 +132,33 @@ def sectionH(queue_model, alpha, lambda_vec, rep_num, alg_iter_num):
         plt.hold(True)
         plt.plot(range(alg_iter_num), s0_norm, '-g', label='S0')
         plt.legend(loc='upper right')
-        plt.title('TD(' + str(lamda) + ') ' + 'An = 10/ (100 + count)')
+        plt.title('TD(' + str(lamda) + ') ' + title)
+        plt.xlabel('Iteration Number'), plt.ylabel('Norm Value')
         plt.show()
 
 
-def sectionI(queue_model, gamma, epsilon):
-    for i, title in enumerate(['An = 1/ count', 'An = 0.01', 'An = 10/ count']):
+def sectionI(queue_model, gamma, epsilon, title_vec):
+    for i, title in enumerate(title_vec):
         inf_norm, s0 = QLearning(queue_model, i, gamma, epsilon, 10000)
         plt.figure()
         plt.plot(range(100, len(inf_norm)), inf_norm[100:], '-b', label='Inf Norm')
         plt.hold(True)
         plt.plot(range(100, len(inf_norm)), s0[100:], '-g', label='S0')
         plt.legend(loc='upper right')
-        plt.title('Q-Learning, ' + title + ', eps = ' + str(epsilon))
+        plt.title('Q-Learning, ' + title + r"$, \epsilon = $" + str(epsilon))
+        plt.xlabel('Iteration Number'), plt.ylabel('Norm Value')
         plt.show()
 
 
 if __name__ == '__main__':
     mu = np.asarray([0.6, 0.5, 0.3, 0.7, 0.1])
     cost = np.asarray([1, 4, 6, 2, 9])
+    title_vec = [r"$A_{n} = \frac{1} {count}$", r"$A_{n} = 0.01$", r"$A_{n} = \frac{10}{100 + count}$"]
 
     queue = Qu.Queue(cost, mu)
-    sectionG(queue, 0)
-    sectionH(queue, 3, [0.1, 0.5, 0.9], 20, 10000)
-    sectionI(queue, 0.999, 0.1)
-    sectionI(queue, 0.999, 0.01)
+    sectionG(queue, 0, title_vec)
+    sectionH(queue, 3, [0.1, 0.5, 0.9], 20, 10000, title_vec[2])
+    sectionI(queue, 0.999, 0.1, title_vec)
+    sectionI(queue, 0.999, 0.01, title_vec)
 
     print('All Done :)')
