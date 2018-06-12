@@ -88,12 +88,14 @@ def TDLambda(queue_model, alpha_type, iteration_num, lamda):
 
 def chooseAction(epsilone, curr_state_idx, queue, Q):
     possible_jobs = queue.states_dict[curr_state_idx].jobs
+    best_action = possible_jobs[np.argmin(Q[curr_state_idx, possible_jobs])]
+    rand_action = randomChoice(possible_jobs)
     if random() < epsilone:
-        action = possible_jobs[np.argmin(Q[curr_state_idx, possible_jobs])]
+        chosen_action = best_action
     else:
-        action = randomChoice(possible_jobs)
+        chosen_action = rand_action
 
-    return action
+    return chosen_action, best_action
 
 
 def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
@@ -113,14 +115,19 @@ def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
             curr_state_idx = 31
             valid_states = [31]
 
-        action = chooseAction(epsilone, curr_state_idx, queue_model, Q)
-        q_policy[curr_state_idx] = action + 1
-        r, next_state_idx = queue_model.Simulate(curr_state_idx, action)
+        chosen_action, best_action = chooseAction(epsilone, curr_state_idx, queue_model, Q)
+        q_policy[curr_state_idx] = best_action + 1
+        r, next_state_idx = queue_model.Simulate(curr_state_idx, chosen_action)
         an = CalcAlpha(counter[curr_state_idx], alpha_type)
 
         possible_jobs = queue_model.states_dict[curr_state_idx].jobs  # was next_state_idx
-        addition = an * (r + gamma * (np.max(Q[next_state_idx, possible_jobs]) - Q[curr_state_idx, action]))
-        Q[curr_state_idx, action] += addition
+        addition = an * (r + gamma * (np.max(Q[next_state_idx, possible_jobs]) - Q[curr_state_idx, chosen_action]))
+        Q[curr_state_idx, chosen_action] += addition
+
+        if next_state_idx != curr_state_idx:
+            valid_states.append(next_state_idx)
+        else:
+            counter[curr_state_idx] += 1
 
         curr_state_idx = next_state_idx
 
@@ -140,18 +147,18 @@ if __name__ == '__main__':
     cost = np.asarray([1, 4, 6, 2, 9])
 
     queue = Qu.Queue(cost, mu)
-    # for i, title in enumerate(['An = 1/ count', 'An = 0.01', 'An = 10/ count']):
-    #     inf_norm, s0 = TDLambda(queue, i, 10000, 0.1)
-    #
-    #     plt.figure()
-    #     plt.plot(range(1, len(inf_norm) + 1), inf_norm, '-b', label='Inf Norm')
-    #     plt.hold(True)
-    #     plt.plot(range(1, len(inf_norm) + 1), s0, '-g', label='S0')
-    #     plt.legend(loc='upper right')
-    #     plt.title(title)
-    #     plt.show()
+    for i, title in enumerate(['An = 1/ count', 'An = 0.01', 'An = 10/ count']):
+        inf_norm, s0 = TDLambda(queue, i, 10000, 0)
 
-    q_policy, inf_norm, s0 = QLearning(queue, 2, 0.99, 0.01, 10000)
+        plt.figure()
+        plt.plot(range(1, len(inf_norm) + 1), inf_norm, '-b', label='Inf Norm')
+        plt.hold(True)
+        plt.plot(range(1, len(inf_norm) + 1), s0, '-g', label='S0')
+        plt.legend(loc='upper right')
+        plt.title(title)
+        plt.show()
+
+    q_policy, inf_norm, s0 = QLearning(queue, 0, 0.999, 0.1, 10000)
     plt.figure()
     plt.plot(range(1, len(inf_norm)), inf_norm[1:], '-b', label='Inf Norm')
     plt.hold(True)
