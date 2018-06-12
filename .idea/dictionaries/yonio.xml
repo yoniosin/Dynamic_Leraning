@@ -2,6 +2,7 @@
   <dictionary name="yonio">
     <words>
       <w>calcpairs</w>
+      <w>epsilone</w>
     </words>
   </dictionary>
 </component>
