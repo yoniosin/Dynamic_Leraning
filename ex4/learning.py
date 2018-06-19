@@ -55,8 +55,7 @@ def chooseAction(epsilone, curr_state_idx, queue_model, Q):
     possible_jobs = queue_model.states_dict[curr_state_idx].jobs
     tmp = Q[curr_state_idx, possible_jobs]
     best_action = possible_jobs[np.argmin(Q[curr_state_idx, possible_jobs])]
-    rand_action = randomChoice(possible_jobs)
-    chosen_action = rand_action if random() < epsilone else best_action
+    chosen_action = randomChoice(possible_jobs) if random() < epsilone else best_action
 
     return chosen_action, best_action
 
