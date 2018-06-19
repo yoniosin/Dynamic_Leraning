@@ -53,6 +53,7 @@ def TDLambda(queue_model, alpha_type, iteration_num, lamda):
 
 def chooseAction(epsilone, curr_state_idx, queue_model, Q):
     possible_jobs = queue_model.states_dict[curr_state_idx].jobs
+    tmp = Q[curr_state_idx, possible_jobs]
     best_action = possible_jobs[np.argmin(Q[curr_state_idx, possible_jobs])]
     rand_action = randomChoice(possible_jobs)
     chosen_action = rand_action if random() < epsilone else best_action
@@ -83,9 +84,11 @@ def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
         r, next_state_idx = queue_model.Simulate(curr_state_idx, chosen_action)
         an = CalcAlpha(counter[curr_state_idx], alpha_type)
 
-        possible_jobs = queue_model.states_dict[curr_state_idx].jobs
-        addition = an * (r + gamma * (np.max(Q[next_state_idx, possible_jobs]) - Q[curr_state_idx, chosen_action]))
-        Q[curr_state_idx, chosen_action] += addition
+        possible_jobs = queue_model.states_dict[next_state_idx].jobs
+        next_state_addition = 0 if next_state_idx == 0 else \
+            gamma * (np.min(Q[next_state_idx, possible_jobs]) - Q[curr_state_idx, chosen_action])
+        addition = r + next_state_addition
+        Q[curr_state_idx, chosen_action] += (an * addition)
 
         if next_state_idx != curr_state_idx:
             valid_states.append(next_state_idx)
@@ -95,8 +98,9 @@ def QLearning(queue_model, alpha_type, gamma, epsilone, iteration_num):
         V, _ = queue_model.calcValueFunction(q_policy, gamma)
 
         diff_vec = abs(V - V_mc)
-        inf_norm.append(max(diff_vec[valid_states]))
+        inf_norm.append(np.max(diff_vec[valid_states]))
 
+        tmp = np.min(Q[31, :])
         s0_abs.append(abs(V_mc[31] - np.min(Q[31, :])))
 
     return np.asarray(inf_norm), np.asarray(s0_abs)
@@ -139,7 +143,7 @@ def sectionH(queue_model, alpha, lambda_vec, rep_num, alg_iter_num, title):
 
 def sectionI(queue_model, gamma, epsilon, title_vec):
     for i, title in enumerate(title_vec):
-        inf_norm, s0 = QLearning(queue_model, i, gamma, epsilon, 10000)
+        inf_norm, s0 = QLearning(queue_model, i, gamma, epsilon, 100000)
         plt.figure()
         plt.plot(range(100, len(inf_norm)), inf_norm[100:], '-b', label='Inf Norm')
         plt.hold(True)
@@ -156,8 +160,8 @@ if __name__ == '__main__':
     title_vec = [r"$A_{n} = \frac{1} {count}$", r"$A_{n} = 0.01$", r"$A_{n} = \frac{10}{100 + count}$"]
 
     queue = Qu.Queue(cost, mu)
-    sectionG(queue, 0, title_vec)
-    sectionH(queue, 3, [0.1, 0.5, 0.9], 20, 10000, title_vec[2])
+    # sectionG(queue, 0, title_vec)
+    # sectionH(queue, 3, [0.1, 0.5, 0.9], 20, 10000, title_vec[2])
     sectionI(queue, 0.999, 0.1, title_vec)
     sectionI(queue, 0.999, 0.01, title_vec)
 
