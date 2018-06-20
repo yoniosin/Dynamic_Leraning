@@ -161,7 +161,7 @@ if __name__ == '__main__':
     queue = Qu.Queue(cost, mu)
     # sectionG(queue, 0, title_vec)
     # sectionH(queue, 3, [0.1, 0.5, 0.9], 20, 10000, title_vec[2])
-    sectionI(queue, 0.999, 0.1, title_vec)
-    sectionI(queue, 0.999, 0.01, title_vec)
+    sectionI(queue, 1, 0.1, title_vec)
+    sectionI(queue, 1, 0.01, title_vec)
 
     print('All Done :)')

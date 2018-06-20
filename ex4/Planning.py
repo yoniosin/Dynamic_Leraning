@@ -81,8 +81,9 @@ class Queue:
             P[curr_state_idx, next_state.idx] += self.mu[selected_job]
             option_cost = self.cost[curr_state.jobs]
             l[curr_state_idx] += sum(option_cost)
-        tmp = np.linalg.inv(np.eye(pi_len) - gamma * P)
-        V = np.dot(tmp, l)
+
+        eps = 10 ** -3
+        V = np.linalg.inv((1 + eps) * np.eye(pi_len) - gamma * P) @ l
         V[0] = 0
         return V, P
 
